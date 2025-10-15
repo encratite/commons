@@ -69,6 +69,9 @@ func FormatMoney(amount float64) string {
 		}
 		output += string(character)
 	}
+	fractionalString := fmt.Sprintf("%.2f", amount)
+	fractionalPart := fractionalString[len(fractionalString) - 2:]
+	output = fmt.Sprintf("%s.%s", output, fractionalPart)
 	if amount < 0.0 {
 		output = fmt.Sprintf("-%s", output)
 	}

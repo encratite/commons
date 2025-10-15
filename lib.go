@@ -1,7 +1,7 @@
 package commons
 
 import (
-	"errors"
+	"encoding/csv"	
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +11,8 @@ import (
 	"slices"
 	"sync"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -89,18 +91,6 @@ func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	return output
 }
 
-func CreateDirectory(path string) {
-	err := os.Mkdir(path, 0755)
-	if err != nil && !errors.Is(err, os.ErrExist) {
-		log.Fatalf("Failed to create directory: %v", err)
-	}
-}
-
-func FileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 func Download(url string) (string, error) {
 	client := &http.Client{
 		Transport: &http.Transport{},
@@ -133,4 +123,34 @@ func DownloadFile(url string, path string) error {
 	}
 	WriteFile(path, data)
 	return nil
+}
+
+func ReadCsv(path string, callback func ([]string)) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatalf("Failed to read CSV (%s): %v", path, err)
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	_, _ = reader.Read()
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		callback(record)
+	}
+}
+
+func LoadConfiguration[T any](path string, configuration *T) *T {
+	if configuration != nil {
+		panic("Configuration had already been loaded")
+	}
+	yamlData := ReadFile(path)
+	configuration = new(T)
+	err := yaml.Unmarshal(yamlData, configuration)
+	if err != nil {
+		log.Fatal("Failed to unmarshal YAML:", err)
+	}
+	return configuration
 }
