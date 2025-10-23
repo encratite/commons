@@ -1,16 +1,14 @@
 package commons
 
 import (
-	"encoding/csv"	
-	"fmt"
+	"encoding/csv"
+	"encoding/json"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"runtime"
 	"slices"
 	"sync"
-	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -91,40 +89,6 @@ func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	return output
 }
 
-func Download(url string) (string, error) {
-	client := &http.Client{
-		Transport: &http.Transport{},
-		Timeout: httpTimeoutSeconds * time.Second,
-	}
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		err := fmt.Errorf("Failed to create HTTP request (%s): %v", url, err)
-		return "", err
-	}
-	request.Header.Set("User-Agent", userAgent)
-	response, err := client.Do(request)
-	if err != nil {
-		err := fmt.Errorf("Failed to GET data (%s): %v", url, err)
-		return "", err
-	}
-	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		err := fmt.Errorf("Failed to read response (%s): %v", url, err)
-		return "", err
-	}
-	return string(body), nil
-}
-
-func DownloadFile(url string, path string) error {
-	data, err := Download(url)
-	if err != nil {
-		return err
-	}
-	WriteFile(path, data)
-	return nil
-}
-
 func ReadCsv(path string, callback func ([]string)) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -140,6 +104,16 @@ func ReadCsv(path string, callback func ([]string)) {
 		}
 		callback(record)
 	}
+}
+
+func ReadJSON[T any](path string) T {
+	data := ReadFile(path)
+	var output T
+	err := json.Unmarshal(data, &output)
+	if err != nil {
+		log.Fatalf("Failed to deserialize JSON: %v", err)
+	}
+	return output
 }
 
 func LoadConfiguration[T any](path string, configuration *T) *T {
