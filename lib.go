@@ -89,7 +89,7 @@ func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	return output
 }
 
-func ReadCsv(path string, callback func ([]string)) {
+func ReadCSV(path string, callback func ([]string)) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatalf("Failed to read CSV (%s): %v", path, err)

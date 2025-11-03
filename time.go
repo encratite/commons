@@ -3,6 +3,7 @@ package commons
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 )
@@ -101,6 +102,33 @@ func MustParseWeekday(weekdayString string) time.Weekday {
 		log.Fatal(err)
 	}
 	return weekday
+}
+
+func ParseTimeOfDay(timeOfDayString string) (time.Duration, error) {
+	pattern := regexp.MustCompile(`^(\d{1,2}):(\d{2})`)
+	matches := pattern.FindStringSubmatch(timeOfDayString)
+	zero := time.Duration(0)
+	if matches == nil {
+		return zero, fmt.Errorf("Unable to parse duration: %s", timeOfDayString)
+	}
+	hours, err := ParseInt(matches[1])
+	if err != nil {
+		return zero, err
+	}
+	minutes, err := ParseInt(matches[2])
+	if err != nil {
+		return zero, err
+	}
+	output := time.Duration(hours) * time.Hour + time.Duration(minutes) * time.Minute
+	return output, nil
+}
+
+func MustParseTimeOfDay(timeOfDayString string) time.Duration {
+	timeOfDay, err := ParseTimeOfDay(timeOfDayString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return timeOfDay
 }
 
 func GetTimeOfDay(timestamp time.Time) time.Duration {

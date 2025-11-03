@@ -1,9 +1,6 @@
 package commons
 
 import (
-	"fmt"
-	"regexp"
-	"strconv"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -27,15 +24,10 @@ func (d *SerializableDate) UnmarshalYAML(value *yaml.Node) error {
 }
 
 func (d *SerializableDuration) UnmarshalYAML(value *yaml.Node) error {
-	pattern := regexp.MustCompile(`^(\d{2}):00`)
-	matches := pattern.FindStringSubmatch(value.Value)
-	if matches == nil {
-		return fmt.Errorf("unable to parse duration: %s", value.Value)
-	}
-	hours, err := strconv.Atoi(matches[1])
+	timeOfDay, err := ParseTimeOfDay(value.Value)
 	if err != nil {
 		return err
 	}
-	d.Duration = time.Duration(hours) * time.Hour
+	d.Duration = timeOfDay
 	return nil
 }
