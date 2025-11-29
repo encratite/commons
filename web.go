@@ -44,16 +44,27 @@ func DownloadFile(url string, path string) error {
 	return nil
 }
 
-func DownloadJSON[T any](url string) (T, error) {
-	body, err := Download(url)
+func DownloadJSON[T any](base string, parameters map[string]string) (T, error) {
+	u, err := url.Parse(base)
 	if err != nil {
-		var empty T
+		log.Fatalf("Unable to parse URL (%s): %v", base, err)
+	}
+	values := url.Values{}
+	for key, value := range parameters {
+		values.Add(key, value)
+	}
+	u.RawQuery = values.Encode()
+	encoded := u.String()
+	body, err := Download(encoded)
+	var empty T
+	if err != nil {
 		return empty, err
 	}
 	var output T
 	err = json.Unmarshal([]byte(body), &output)
 	if err != nil {
-		var empty T
+		log.Printf("Failed to parse JSON data (%s): %v", encoded, err)
+		log.Print(string(body))
 		return empty, err
 	}
 	return output, nil

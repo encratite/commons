@@ -78,6 +78,14 @@ func FormatMoney(amount float64) string {
 	return output
 }
 
+func FormatProfit(amount float64) string {
+	formatted := FormatMoney(amount)
+	if amount > 0 {
+		formatted = fmt.Sprintf("+%s", formatted)
+	}
+	return formatted
+}
+
 func Trim(input string) string {
 	return strings.Trim(input, " \r\t\n")
 }
