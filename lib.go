@@ -106,6 +106,43 @@ func ReadCSV(path string, callback func ([]string)) {
 	}
 }
 
+func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatalf("Failed to read CSV file from %s: %v", path, err)
+	}
+	defer file.Close()
+	reader := csv.NewReader(file)
+	csvColumns, err := reader.Read()
+	if err == io.EOF {
+		log.Fatalf("Failed to read CSV columns from %s: %v", path, err)
+	}
+	indices := []int{}
+	for _, column := range columns {
+		index := slices.Index(csvColumns, column)
+		if index == -1 {
+			log.Fatalf("Unable to find column \"%s\" in CSV file %s", column, path)
+		}
+		indices = append(indices, index)
+	}
+	line := 2
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		indexRecord := []string{}
+		for _, index := range indices {
+			if index >= len(record) {
+				log.Fatalf("Not enough records on line %d in CSV file %s", line, path)
+			}
+			indexRecord = append(indexRecord, record[index])
+		}
+		callback(indexRecord)
+		line++
+	}
+}
+
 func ReadJSON[T any](path string) T {
 	data := ReadFile(path)
 	var output T
