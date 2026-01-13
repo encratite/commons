@@ -153,12 +153,9 @@ func ReadJSON[T any](path string) T {
 	return output
 }
 
-func LoadConfiguration[T any](path string, configuration *T) *T {
-	if configuration != nil {
-		panic("Configuration had already been loaded")
-	}
+func LoadConfiguration[T any](path string) *T {
 	yamlData := ReadFile(path)
-	configuration = new(T)
+	configuration := new(T)
 	err := yaml.Unmarshal(yamlData, configuration)
 	if err != nil {
 		log.Fatal("Failed to unmarshal YAML:", err)

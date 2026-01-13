@@ -1,6 +1,7 @@
 package commons
 
 import (
+	"regexp"
 	"time"
 
 	"gopkg.in/yaml.v3"
@@ -12,6 +13,10 @@ type SerializableDate struct {
 
 type SerializableDuration struct {
 	time.Duration
+}
+
+type SerializableRegexp struct {
+	*regexp.Regexp
 }
 
 func (d *SerializableDate) UnmarshalYAML(value *yaml.Node) error {
@@ -29,5 +34,14 @@ func (d *SerializableDuration) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 	d.Duration = timeOfDay
+	return nil
+}
+
+func (r *SerializableRegexp) UnmarshalYAML(value *yaml.Node) error {
+	pattern, err := regexp.Compile(value.Value)
+	if err != nil {
+		return err
+	}
+	r.Regexp = pattern
 	return nil
 }
