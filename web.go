@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func Download(url string) (string, error) {
+func Download(url string) ([]byte, error) {
 	client := &http.Client{
 		Transport: &http.Transport{},
 		Timeout: httpTimeoutSeconds * time.Second,
@@ -18,21 +18,29 @@ func Download(url string) (string, error) {
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		err := fmt.Errorf("Failed to create HTTP request (%s): %v", url, err)
-		return "", err
+		return nil, err
 	}
 	request.Header.Set("User-Agent", userAgent)
 	response, err := client.Do(request)
 	if err != nil {
 		err := fmt.Errorf("Failed to GET data (%s): %v", url, err)
-		return "", err
+		return nil, err
 	}
 	defer response.Body.Close()
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		err := fmt.Errorf("Failed to read response (%s): %v", url, err)
+		return nil, err
+	}
+	return body, nil
+}
+
+func DownloadString(url string) (string, error) {
+	data, err := Download(url)
+	if err != nil {
 		return "", err
 	}
-	return string(body), nil
+	return string(data), err
 }
 
 func DownloadFile(url string, path string) error {
@@ -55,7 +63,7 @@ func DownloadJSON[T any](base string, parameters map[string]string) (T, error) {
 	}
 	u.RawQuery = values.Encode()
 	encoded := u.String()
-	body, err := Download(encoded)
+	body, err := DownloadString(encoded)
 	var empty T
 	if err != nil {
 		return empty, err

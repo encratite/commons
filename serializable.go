@@ -15,6 +15,10 @@ type SerializableDuration struct {
 	time.Duration
 }
 
+type SerializableWeekday struct {
+	time.Weekday
+}
+
 type SerializableRegexp struct {
 	*regexp.Regexp
 }
@@ -34,6 +38,15 @@ func (d *SerializableDuration) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 	d.Duration = timeOfDay
+	return nil
+}
+
+func (d *SerializableWeekday) UnmarshalYAML(value *yaml.Node) error {
+	weekday, err := ParseWeekday(value.Value)
+	if err != nil {
+		return err
+	}
+	d.Weekday = weekday
 	return nil
 }
 

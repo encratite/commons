@@ -15,12 +15,16 @@ func ReadFile(path string) []byte {
 	return content
 }
 
-func WriteFile(path, data string) {
-	bytes := []byte(data)
-	err := os.WriteFile(path, bytes, 0644)
+func WriteFile(path string, data []byte) {
+	err := os.WriteFile(path, data, 0644)
 	if err != nil {
 		log.Fatalf("Failed to write file (%s): %v", path, err)
 	}
+}
+
+func WriteFileString(path, data string) {
+	bytes := []byte(data)
+	WriteFile(path, bytes)
 }
 
 func CreateDirectory(path string) {

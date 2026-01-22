@@ -3,6 +3,7 @@ package commons
 import (
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -161,4 +162,10 @@ func LoadConfiguration[T any](path string) *T {
 		log.Fatal("Failed to unmarshal YAML:", err)
 	}
 	return configuration
+}
+
+func Fatalf(format string, arguments ...any) {
+	formatted := fmt.Sprintf(format, arguments...)
+	fmt.Printf("%s\n", formatted)
+	panic(formatted)
 }
