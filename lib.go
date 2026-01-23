@@ -90,16 +90,11 @@ func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	return output
 }
 
-func ReadCSV(path string, callback func ([]string)) {
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatalf("Failed to read CSV (%s): %v", path, err)
-	}
-	defer file.Close()
-	reader := csv.NewReader(file)
-	_, _ = reader.Read()
+func ReadCSVFile(reader io.Reader, callback func ([]string)) {
+	csvReader := csv.NewReader(reader)
+	_, _ = csvReader.Read()
 	for {
-		record, err := reader.Read()
+		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
@@ -107,14 +102,18 @@ func ReadCSV(path string, callback func ([]string)) {
 	}
 }
 
-func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
+func ReadCSV(path string, callback func ([]string)) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("Failed to read CSV file from %s: %v", path, err)
+		log.Fatalf("Failed to read CSV (%s): %v", path, err)
 	}
 	defer file.Close()
-	reader := csv.NewReader(file)
-	csvColumns, err := reader.Read()
+	ReadCSVFile(file, callback)
+}
+
+func ReadCSVColumnsFile(reader io.Reader, path string, columns []string, callback func ([]string)) {
+	csvReader := csv.NewReader(reader)
+	csvColumns, err := csvReader.Read()
 	if err == io.EOF {
 		log.Fatalf("Failed to read CSV columns from %s: %v", path, err)
 	}
@@ -128,7 +127,7 @@ func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
 	}
 	line := 2
 	for {
-		record, err := reader.Read()
+		record, err := csvReader.Read()
 		if err == io.EOF {
 			break
 		}
@@ -142,6 +141,15 @@ func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
 		callback(indexRecord)
 		line++
 	}
+}
+
+func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatalf("Failed to read CSV (%s): %v", path, err)
+	}
+	defer file.Close()
+	ReadCSVColumnsFile(file, path, columns, callback)
 }
 
 func ReadJSON[T any](path string) T {
