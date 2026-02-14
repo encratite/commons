@@ -6,6 +6,12 @@ import (
 	"math"
 	"strings"
 	"strconv"
+
+	"github.com/fatih/color"
+)
+
+const (
+	percent = 100.0
 )
 
 func IntToString(integer int) string {
@@ -60,6 +66,16 @@ func MustParseFloat(input string) float64 {
 	return output
 }
 
+func FormatPercentage(ratio float64, precision int) string {
+	output := fmt.Sprintf("%+." + IntToString(precision) + "f%%", percent * ratio)
+	if ratio > 0 {
+		output = Green(output)
+	} else if ratio < 0 {
+		output = Red(output)
+	}
+	return output
+}
+
 func FormatMoney(amount float64) string {
 	amountString := fmt.Sprintf("%d", int64(math.Abs(amount)))
 	output := "$"
@@ -81,11 +97,23 @@ func FormatMoney(amount float64) string {
 func FormatProfit(amount float64) string {
 	formatted := FormatMoney(amount)
 	if amount > 0 {
-		formatted = fmt.Sprintf("+%s", formatted)
+		formatted = Green(fmt.Sprintf("+%s", formatted))
+	} else {
+		formatted = Red(formatted)
 	}
 	return formatted
 }
 
 func Trim(input string) string {
 	return strings.Trim(input, " \r\t\n")
+}
+
+func Green(input string) string {
+	green := color.New(color.FgGreen).SprintFunc()
+	return green(input)
+}
+
+func Red(input string) string {
+	red := color.New(color.FgRed).SprintFunc()
+	return red(input)
 }
