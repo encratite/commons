@@ -65,6 +65,28 @@ func FindPointer[T any](slice []T, match func (T) bool) (*T, bool) {
 	}
 }
 
+func Parallel[A any](elements []A, workers int, callback func(A)) {
+	elementChan := make(chan taskTuple[A], len(elements))
+	for i, x := range elements {
+		elementChan <- taskTuple[A]{
+			index: i,
+			element: x,
+		}
+	}
+	close(elementChan)
+	var wg sync.WaitGroup
+	wg.Add(workers)
+	for range workers {
+		go func() {
+			defer wg.Done()
+			for task := range elementChan {
+				callback(task.element)
+			}
+		}()
+	}
+	wg.Wait()
+}
+
 func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	workers := runtime.NumCPU()
 	elementChan := make(chan taskTuple[A], len(elements))
