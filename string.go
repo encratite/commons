@@ -117,3 +117,13 @@ func Red(input string) string {
 	red := color.New(color.FgRed).SprintFunc()
 	return red(input)
 }
+
+func Yellow(input string) string {
+	red := color.New(color.FgYellow).SprintFunc()
+	return red(input)
+}
+
+func White(input string) string {
+	red := color.New(color.FgWhite).SprintFunc()
+	return red(input)
+}

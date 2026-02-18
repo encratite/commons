@@ -66,6 +66,9 @@ func FindPointer[T any](slice []T, match func (T) bool) (*T, bool) {
 }
 
 func Parallel[A any](elements []A, workers int, callback func(A)) {
+	if workers == 0 {
+		workers = runtime.NumCPU()
+	}
 	elementChan := make(chan taskTuple[A], len(elements))
 	for i, x := range elements {
 		elementChan <- taskTuple[A]{
