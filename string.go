@@ -98,7 +98,7 @@ func FormatProfit(amount float64) string {
 	formatted := FormatMoney(amount)
 	if amount > 0 {
 		formatted = Green(fmt.Sprintf("+%s", formatted))
-	} else {
+	} else if amount < 0 {
 		formatted = Red(formatted)
 	}
 	return formatted
