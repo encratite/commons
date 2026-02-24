@@ -13,6 +13,7 @@ const (
 	minutesLayout = "2006-01-02 15:04"
 	timestampLayout = "2006-01-02 15:04:05"
 	minutesPerHour = 60
+	hoursPerDay = 24
 )
 
 func GetDate(timestamp time.Time) time.Time {
@@ -105,21 +106,32 @@ func MustParseWeekday(weekdayString string) time.Weekday {
 }
 
 func ParseTimeOfDay(timeOfDayString string) (time.Duration, error) {
-	pattern := regexp.MustCompile(`^(\d{1,2}):(\d{2})`)
+	pattern := regexp.MustCompile(`^(?:(\d+)d )?(\d+):(\d{2})$`)
 	matches := pattern.FindStringSubmatch(timeOfDayString)
 	zero := time.Duration(0)
 	if matches == nil {
 		return zero, fmt.Errorf("Unable to parse duration: %s", timeOfDayString)
 	}
-	hours, err := ParseInt(matches[1])
+	dayMatch := matches[1]
+	var days int
+	if dayMatch == "" {
+		days = 0
+	} else {
+		d, err := ParseInt(matches[1])
+		if err != nil {
+			return zero, err
+		}
+		days = d
+	}
+	hours, err := ParseInt(matches[2])
 	if err != nil {
 		return zero, err
 	}
-	minutes, err := ParseInt(matches[2])
+	minutes, err := ParseInt(matches[3])
 	if err != nil {
 		return zero, err
 	}
-	output := time.Duration(hours) * time.Hour + time.Duration(minutes) * time.Minute
+	output := time.Duration(hoursPerDay * days + hours) * time.Hour + time.Duration(minutes) * time.Minute
 	return output, nil
 }
 
@@ -141,4 +153,18 @@ func GetTimeOfDayString(timeOfDay time.Duration) string {
 	minutes := int(timeOfDay.Minutes()) % minutesPerHour
 	output := fmt.Sprintf("%02d:%02d", hours, minutes)
 	return output
+}
+
+func GetDurationString(duration time.Duration) string {
+	hours := int(duration.Hours())
+	days := hours / hoursPerDay
+	if days > 0 {
+		hours %= days
+	}
+	minutes := int(duration.Minutes()) % minutesPerHour
+	if days > 0 {
+		return fmt.Sprintf("%dd %02dh %02dm", days, hours, minutes)
+	} else {
+		return fmt.Sprintf("%02dh %02dm", hours, minutes)
+	}
 }
