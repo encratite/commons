@@ -2,6 +2,7 @@ package commons
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -34,10 +35,10 @@ func CreateDirectory(path string) {
 	}
 }
 
-func GetFiles(directory string, extension string) []string {
+func GetFiles(directory string, extension string) ([]string, error) {
 	entries, err := os.ReadDir(directory)
 	if err != nil {
-		log.Fatalf("Unable to read files from directory (%s): %v", directory, err)
+		return nil, fmt.Errorf("Unable to read files from directory (%s): %v", directory, err)
 	}
 	files := []string{}
 	for _, entry := range entries {
@@ -47,7 +48,7 @@ func GetFiles(directory string, extension string) []string {
 			files = append(files, path)
 		}
 	}
-	return files
+	return files, nil
 }
 
 func GetDirectories(directory string) []string {

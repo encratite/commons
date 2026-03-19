@@ -12,6 +12,7 @@ const (
 	dateLayout = "2006-01-02"
 	minutesLayout = "2006-01-02 15:04"
 	timestampLayout = "2006-01-02 15:04:05"
+	milliTimestampLayout = "2006-01-02 15:04:05.000"
 	minutesPerHour = 60
 	hoursPerDay = 24
 )
@@ -48,6 +49,9 @@ func GetDateString(date time.Time) string {
 
 func GetTimeString(timestamp time.Time) string {
 	return timestamp.Format(timestampLayout)
+}
+func GetMilliTimeString(timestamp time.Time) string {
+	return timestamp.Format(milliTimestampLayout)
 }
 
 func ParseTime(timeString string) (time.Time, error) {

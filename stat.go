@@ -31,3 +31,18 @@ func Median(samples []float64) float64 {
 func StdDev(samples []float64) float64 {
 	return stat.StdDev(samples, nil)
 }
+
+func GetCorrelation(x []float64, y []float64) float64 {
+	xMean := Mean(x)
+	yMean := Mean(y)
+	numerator := 0.0
+	denominator := 0.0
+	for i := range x {
+		xDelta := x[i] - xMean
+		yDelta := y[i] - yMean
+		numerator += xDelta * yDelta
+		denominator += xDelta * xDelta
+	}
+	beta := numerator / denominator
+	return beta
+}

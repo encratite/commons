@@ -68,6 +68,7 @@ func DownloadJSON[T any](base string, parameters map[string]string) (T, error) {
 	if err != nil {
 		return empty, err
 	}
+	// fmt.Printf("Body: %s\n", body)
 	var output T
 	err = json.Unmarshal([]byte(body), &output)
 	if err != nil {
