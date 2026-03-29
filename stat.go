@@ -7,6 +7,10 @@ import (
 	"gonum.org/v1/gonum/stat"
 )
 
+const (
+	weeksPerYear = 52
+)
+
 func Mean(samples []float64) float64 {
 	return stat.Mean(samples, nil)
 }
@@ -45,4 +49,18 @@ func GetCorrelation(x []float64, y []float64) float64 {
 	}
 	beta := numerator / denominator
 	return beta
+}
+
+func GetSharpeRatio(weeklyReturns []float64, riskFreeRate float64) float64 {
+	if len(weeklyReturns) < 2 {
+		return math.NaN()
+	}
+	meanReturn := Mean(weeklyReturns)
+	stdDev := StdDev(weeklyReturns)
+	weeklySharpeRatio := (meanReturn - riskFreeRate / weeksPerYear) / stdDev
+	sharpeRatio := math.Sqrt(weeksPerYear) * weeklySharpeRatio
+	if math.IsInf(sharpeRatio, 1) || math.IsInf(sharpeRatio, -1) {
+		return math.NaN()
+	}
+	return sharpeRatio
 }

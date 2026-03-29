@@ -172,3 +172,27 @@ func GetDurationString(duration time.Duration) string {
 		return fmt.Sprintf("%02dh %02dm", hours, minutes)
 	}
 }
+
+func GetWeekdays() []time.Weekday {
+	return []time.Weekday{
+		time.Monday,
+		time.Tuesday,
+		time.Wednesday,
+		time.Thursday,
+		time.Friday,
+		time.Saturday,
+		time.Sunday,
+	}
+}
+
+func GetWeekdayNames() []string {
+	return []string{
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+		"Sunday",
+	}
+}
