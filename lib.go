@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"runtime"
 	"slices"
@@ -115,9 +114,11 @@ func ParallelMap[A, B any](elements []A, callback func(A) B) []B {
 	return output
 }
 
-func ReadCSVFile(reader io.Reader, callback func ([]string)) {
+func ReadCSVFile(reader io.Reader, skipHeader bool, callback func ([]string)) {
 	csvReader := csv.NewReader(reader)
-	_, _ = csvReader.Read()
+	if skipHeader {
+		_, _ = csvReader.Read()
+	}
 	for {
 		record, err := csvReader.Read()
 		if err == io.EOF {
@@ -127,26 +128,27 @@ func ReadCSVFile(reader io.Reader, callback func ([]string)) {
 	}
 }
 
-func ReadCSV(path string, callback func ([]string)) {
+func ReadCSV(path string, skipHeader bool, callback func ([]string)) error {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("Failed to read CSV (%s): %v", path, err)
+		return fmt.Errorf("Failed to read CSV (%s): %v", path, err)
 	}
 	defer file.Close()
-	ReadCSVFile(file, callback)
+	ReadCSVFile(file, skipHeader, callback)
+	return nil
 }
 
-func ReadCSVColumnsFile(reader io.Reader, path string, columns []string, callback func ([]string)) {
+func ReadCSVColumnsFile(reader io.Reader, path string, columns []string, callback func ([]string)) error {
 	csvReader := csv.NewReader(reader)
 	csvColumns, err := csvReader.Read()
 	if err == io.EOF {
-		log.Fatalf("Failed to read CSV columns from %s: %v", path, err)
+		return fmt.Errorf("Failed to read CSV columns from %s: %v", path, err)
 	}
 	indices := []int{}
 	for _, column := range columns {
 		index := slices.Index(csvColumns, column)
 		if index == -1 {
-			log.Fatalf("Unable to find column \"%s\" in CSV file %s", column, path)
+			return fmt.Errorf("Unable to find column \"%s\" in CSV file %s", column, path)
 		}
 		indices = append(indices, index)
 	}
@@ -159,22 +161,24 @@ func ReadCSVColumnsFile(reader io.Reader, path string, columns []string, callbac
 		indexRecord := []string{}
 		for _, index := range indices {
 			if index >= len(record) {
-				log.Fatalf("Not enough records on line %d in CSV file %s", line, path)
+				return fmt.Errorf("Not enough records on line %d in CSV file %s", line, path)
 			}
 			indexRecord = append(indexRecord, record[index])
 		}
 		callback(indexRecord)
 		line++
 	}
+	return nil
 }
 
-func ReadCSVColumns(path string, columns []string, callback func ([]string)) {
+func ReadCSVColumns(path string, columns []string, callback func ([]string)) error {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatalf("Failed to read CSV (%s): %v", path, err)
+		return fmt.Errorf("Failed to read CSV (%s): %v", path, err)
 	}
 	defer file.Close()
 	ReadCSVColumnsFile(file, path, columns, callback)
+	return nil
 }
 
 func ReadJSON[T any](path string) T {
@@ -182,7 +186,7 @@ func ReadJSON[T any](path string) T {
 	var output T
 	err := json.Unmarshal(data, &output)
 	if err != nil {
-		log.Fatalf("Failed to deserialize JSON: %v", err)
+		Fatalf("Failed to deserialize JSON: %v", err)
 	}
 	return output
 }
@@ -192,7 +196,7 @@ func LoadConfiguration[T any](path string) *T {
 	configuration := new(T)
 	err := yaml.Unmarshal(yamlData, configuration)
 	if err != nil {
-		log.Fatal("Failed to unmarshal YAML:", err)
+		Fatalf("Failed to unmarshal YAML: %v", err)
 	}
 	return configuration
 }
