@@ -1,6 +1,7 @@
 package commons
 
 import (
+	"cmp"
 	"math"
 	"slices"
 
@@ -10,6 +11,11 @@ import (
 const (
 	weeksPerYear = 52
 )
+
+type rankData struct {
+	value float64
+	rank float64
+}
 
 func Mean(samples []float64) float64 {
 	return stat.Mean(samples, nil)
@@ -37,18 +43,50 @@ func StdDev(samples []float64) float64 {
 }
 
 func GetCorrelation(x []float64, y []float64) float64 {
+	if len(x) != len(y) {
+		Fatalf("x and y must have the same number of elements")
+	}
 	xMean := Mean(x)
 	yMean := Mean(y)
 	numerator := 0.0
-	denominator := 0.0
+	denominator1 := 0.0
+	denominator2 := 0.0
 	for i := range x {
 		xDelta := x[i] - xMean
 		yDelta := y[i] - yMean
 		numerator += xDelta * yDelta
-		denominator += xDelta * xDelta
+		denominator1 += xDelta * xDelta
+		denominator2 += yDelta * yDelta
 	}
-	beta := numerator / denominator
-	return beta
+	denominator := math.Sqrt(denominator1) * math.Sqrt(denominator2)
+	correlation := numerator / denominator
+	return correlation
+}
+
+func GetSpearman(x []float64, y []float64) float64 {
+	xRanks := getRanks(x)
+	yRanks := getRanks(y)
+	correlation := GetCorrelation(xRanks, yRanks)
+	return correlation
+}
+
+func getRanks(values []float64) []float64 {
+	ranks := []rankData{}
+	for i, sample := range values {
+		data := rankData{
+			value: sample,
+			rank: float64(i + 1),
+		}
+		ranks = append(ranks, data)
+	}
+	slices.SortFunc(ranks, func (a, b rankData) int {
+		return cmp.Compare(a.value, b.value)
+	})
+	output := []float64{}
+	for _, data := range ranks {
+		output = append(output, data.rank)
+	}
+	return output
 }
 
 func GetSharpeRatio(weeklyReturns []float64, riskFreeRate float64) float64 {
@@ -63,4 +101,8 @@ func GetSharpeRatio(weeklyReturns []float64, riskFreeRate float64) float64 {
 		return math.NaN()
 	}
 	return sharpeRatio
+}
+
+func GetRateOfChange(a, b float64) float64 {
+	return a / b - 1.0
 }

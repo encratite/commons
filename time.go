@@ -9,12 +9,14 @@ import (
 )
 
 const (
+	MinutesPerHour = 60
+	HoursPerDay = 24
+	DaysPerWeek = 7
+
 	dateLayout = "2006-01-02"
 	minutesLayout = "2006-01-02 15:04"
 	timestampLayout = "2006-01-02 15:04:05"
 	milliTimestampLayout = "2006-01-02 15:04:05.000"
-	minutesPerHour = 60
-	hoursPerDay = 24
 )
 
 func GetDate(timestamp time.Time) time.Time {
@@ -135,7 +137,7 @@ func ParseTimeOfDay(timeOfDayString string) (time.Duration, error) {
 	if err != nil {
 		return zero, err
 	}
-	output := time.Duration(hoursPerDay * days + hours) * time.Hour + time.Duration(minutes) * time.Minute
+	output := time.Duration(HoursPerDay * days + hours) * time.Hour + time.Duration(minutes) * time.Minute
 	return output, nil
 }
 
@@ -154,18 +156,18 @@ func GetTimeOfDay(timestamp time.Time) time.Duration {
 
 func GetTimeOfDayString(timeOfDay time.Duration) string {
 	hours := int(timeOfDay.Hours())
-	minutes := int(timeOfDay.Minutes()) % minutesPerHour
+	minutes := int(timeOfDay.Minutes()) % MinutesPerHour
 	output := fmt.Sprintf("%02d:%02d", hours, minutes)
 	return output
 }
 
 func GetDurationString(duration time.Duration) string {
 	hours := int(duration.Hours())
-	days := hours / hoursPerDay
+	days := hours / HoursPerDay
 	if days > 0 {
 		hours %= days
 	}
-	minutes := int(duration.Minutes()) % minutesPerHour
+	minutes := int(duration.Minutes()) % MinutesPerHour
 	if days > 0 {
 		return fmt.Sprintf("%dd %02dh %02dm", days, hours, minutes)
 	} else {
