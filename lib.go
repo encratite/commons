@@ -191,6 +191,14 @@ func ReadJSON[T any](path string) T {
 	return output
 }
 
+func WriteJSON[T any](data T, path string) {
+	output, err := json.Marshal(data)
+	if err != nil {
+		Fatalf("Failed to serialize JOSN: %v", err)
+	}
+	WriteFile(path, output)
+}
+
 func LoadConfiguration[T any](path string) *T {
 	yamlData := ReadFile(path)
 	configuration := new(T)

@@ -67,6 +67,9 @@ func MustParseFloat(input string) float64 {
 }
 
 func FormatPercentage(ratio float64, precision int) string {
+	if math.IsNaN(ratio) {
+		return "-"
+	}
 	output := fmt.Sprintf("%+." + IntToString(precision) + "f%%", percent * ratio)
 	if ratio > 0 {
 		output = Green(output)

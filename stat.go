@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 
+	"github.com/cdipaolo/goml/linear"
 	"gonum.org/v1/gonum/stat"
 )
 
@@ -105,4 +106,23 @@ func GetSharpeRatio(weeklyReturns []float64, riskFreeRate float64) float64 {
 
 func GetRateOfChange(a, b float64) float64 {
 	return a / b - 1.0
+}
+
+func GetR2Score(features [][]float64, labels []float64, model *linear.LeastSquares) float64 {
+	meanObserved := Mean(labels)
+	residualSum := 0.0
+	totalSum := 0.0
+	for i := range features {
+		label := labels[i]
+		prediction, err := model.Predict(features[i])
+		if err != nil {
+			Fatalf("Prediction failed: %v", err)
+		}
+		residualDelta := label - prediction[0]
+		residualSum += residualDelta * residualDelta
+		totalDelta := label - meanObserved
+		totalSum += totalDelta * totalDelta
+	}
+	r2Score := 1.0 - residualSum / totalSum
+	return r2Score
 }

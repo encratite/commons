@@ -12,6 +12,8 @@ const (
 	MinutesPerHour = 60
 	HoursPerDay = 24
 	DaysPerWeek = 7
+	TradingDaysPerYear = 252
+	DaysPerYear = 365
 
 	dateLayout = "2006-01-02"
 	minutesLayout = "2006-01-02 15:04"
@@ -175,26 +177,78 @@ func GetDurationString(duration time.Duration) string {
 	}
 }
 
-func GetWeekdays() []time.Weekday {
-	return []time.Weekday{
-		time.Monday,
-		time.Tuesday,
-		time.Wednesday,
-		time.Thursday,
-		time.Friday,
-		time.Saturday,
-		time.Sunday,
+func GetWeekdays(weekend bool) []time.Weekday {
+	if weekend {
+		return []time.Weekday{
+			time.Monday,
+			time.Tuesday,
+			time.Wednesday,
+			time.Thursday,
+			time.Friday,
+			time.Saturday,
+			time.Sunday,
+		}
+	} else {
+		return []time.Weekday{
+			time.Monday,
+			time.Tuesday,
+			time.Wednesday,
+			time.Thursday,
+			time.Friday,
+		}
 	}
 }
 
-func GetWeekdayNames() []string {
-	return []string{
+func GetMonths() []time.Month {
+	return []time.Month{
+		time.January,
+		time.February,
+		time.March,
+		time.April,
+		time.May,
+		time.June,
+		time.July,
+		time.August,
+		time.September,
+		time.October,
+		time.November,
+		time.December,
+	}
+}
+
+func ParseMonth(value string) (time.Month, error) {
+	months := GetMonths()
+	for _, month := range months {
+		monthString := fmt.Sprintf("%v", month)
+		if monthString == value {
+			return month, nil
+		}
+	}
+	return time.January, fmt.Errorf("Unable to parse month: \"%s\"", value)
+}
+
+func MustParseMonth(value string) time.Month {
+	month, err := ParseMonth(value)
+	if err != nil {
+		Fatalf("%v", err)
+	}
+	return month
+}
+
+func GetWeekdayNames(weekend bool) []string {
+	names := []string{
 		"Monday",
 		"Tuesday",
 		"Wednesday",
 		"Thursday",
 		"Friday",
-		"Saturday",
-		"Sunday",
 	}
+	if weekend {
+		w := []string{
+			"Saturday",
+			"Sunday",
+		}
+		names = append(names, w...)
+	}
+	return names
 }

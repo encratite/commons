@@ -26,3 +26,27 @@ func RenderTable(header []string, rows [][]string) {
 	table.Bulk(rows)
 	table.Render()
 }
+
+func FormatTable(header []string, rows [][]string, alignRight []bool) {
+	alignments := []tw.Align{}
+	for _, align := range alignRight {
+		var value tw.Align
+		if align {
+			value = tw.AlignRight
+		} else {
+			value = tw.AlignLeft
+		}
+		alignments = append(alignments, value)
+	}
+	tableConfig := tablewriter.WithConfig(tablewriter.Config{
+		Header: tw.CellConfig{
+			Formatting: tw.CellFormatting{AutoFormat: tw.Off},
+			Alignment: tw.CellAlignment{Global: tw.AlignLeft},
+		}},
+	)
+	alignmentConfig := tablewriter.WithAlignment(alignments)
+	table := tablewriter.NewTable(os.Stdout, tableConfig, alignmentConfig)
+	table.Header(header)
+	table.Bulk(rows)
+	table.Render()
+}
