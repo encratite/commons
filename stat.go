@@ -105,7 +105,15 @@ func GetSharpeRatio(weeklyReturns []float64, riskFreeRate float64) float64 {
 }
 
 func GetRateOfChange(a, b float64) float64 {
-	return a / b - 1.0
+	value := a / b - 1.0
+	if math.IsNaN(value) || math.IsInf(value, 1) || math.IsInf(value, -1) {
+		Fatalf("Invalid ratio: a = %.3f, b = %.3f", a, b)
+	}
+	return value
+}
+
+func GetShortReturn(a, b float64) float64 {
+	return - GetRateOfChange(a, b)
 }
 
 func GetR2Score(features [][]float64, labels []float64, model *linear.LeastSquares) float64 {
