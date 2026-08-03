@@ -134,3 +134,22 @@ func GetR2Score(features [][]float64, labels []float64, model *linear.LeastSquar
 	r2Score := 1.0 - residualSum / totalSum
 	return r2Score
 }
+
+func GetTStatistic(returns1 []float64, returns2 []float64) float64 {
+	mean1 := Mean(returns1)
+	mean2 := Mean(returns2)
+	stdDev1 := StdDev(returns1)
+	stdDev2 := StdDev(returns2)
+	n1 := float64(len(returns1))
+	n2 := float64(len(returns2))
+	t := (mean1 - mean2) / math.Sqrt(stdDev1 * stdDev1 / n1 + stdDev2 * stdDev2 / n2)
+	return t
+}
+
+func GetTStatisticOne(returns []float64) float64 {
+	mean := Mean(returns)
+	stdDev := StdDev(returns)
+	n := float64(len(returns))
+	t := mean / stdDev * math.Sqrt(n)
+	return t
+}
