@@ -1,6 +1,7 @@
 package commons
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,7 +16,7 @@ func Download(url string) ([]byte, error) {
 		Transport: http.DefaultTransport,
 		Timeout: httpTimeoutSeconds * time.Second,
 	}
-	request, err := http.NewRequest("GET", url, nil)
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		err := fmt.Errorf("Failed to create HTTP request (%s): %v", url, err)
 		return nil, err
@@ -90,4 +91,34 @@ func BuildURL(base string, parameters map[string]string) string {
 	u.RawQuery = values.Encode()
 	encoded := u.String()
 	return encoded
+}
+
+func PostJSON(url string, object any) ([]byte, error) {
+	client := &http.Client{
+		Transport: http.DefaultTransport,
+		Timeout: httpTimeoutSeconds * time.Second,
+	}
+	data, err := json.Marshal(object)
+	if err != nil {
+		return nil, err
+	}
+	reader := bytes.NewReader(data)
+	request, err := http.NewRequest(http.MethodPost, url, reader)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("User-Agent", userAgent)
+	response, err := client.Do(request)
+	if err != nil {
+		err := fmt.Errorf("Failed to POST data (%s): %v", url, err)
+		return nil, err
+	}
+	defer response.Body.Close()
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		err := fmt.Errorf("Failed to read response (%s): %v", url, err)
+		return nil, err
+	}
+	return body, nil
 }

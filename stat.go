@@ -43,6 +43,14 @@ func StdDev(samples []float64) float64 {
 	return stat.StdDev(samples, nil)
 }
 
+func Covariance(x , y []float64) float64 {
+	return stat.Covariance(x, y, nil)
+}
+
+func Variance(x []float64) float64 {
+	return stat.Variance(x, nil)
+}
+
 func GetCorrelation(x []float64, y []float64) float64 {
 	if len(x) != len(y) {
 		Fatalf("x and y must have the same number of elements")
