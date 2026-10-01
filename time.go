@@ -252,3 +252,11 @@ func GetWeekdayNames(weekend bool) []string {
 	}
 	return names
 }
+
+func TimeGreaterEqual(a, b time.Time) bool {
+	return !a.Before(b)
+}
+
+func TimeLessEqual(a, b time.Time) bool {
+	return !a.After(b)
+}
