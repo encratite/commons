@@ -2,6 +2,7 @@ package commons
 
 import (
 	"cmp"
+	"fmt"
 	"math"
 	"slices"
 
@@ -49,6 +50,53 @@ func Covariance(x , y []float64) float64 {
 
 func Variance(x []float64) float64 {
 	return stat.Variance(x, nil)
+}
+
+func LeastSquares(x, y []float64) (float64, float64, error) {
+	if len(x) != len(y) {
+		err := fmt.Errorf("Slices must be the same length to calculate least squares")
+		return math.NaN(),  math.NaN(), err
+	}
+	if len(x) == 0 {
+		err := fmt.Errorf("Can't calculate least squares of empty input")
+		return math.NaN(),  math.NaN(), err
+	}
+	var xMean, yMean float64
+	n := float64(len(x))
+	for i := range x {
+		xMean += x[i] / n
+		yMean += y[i] / n
+	}
+	covariance := 0.0
+	variance := 0.0
+	for i := range x {
+		dx := x[i] - xMean
+		covariance += dx * (y[i] - yMean)
+		variance += dx * dx
+	}
+	if variance == 0 {
+		err := fmt.Errorf("Zero variance feature")
+		return math.NaN(),  math.NaN(), err
+	}
+	slope := covariance / variance
+	intercept := yMean - slope * xMean
+	return slope, intercept, nil
+}
+
+func LeastSquaresR2(x, y []float64, slope, intercept float64) float64 {
+	meanObserved := Mean(y)
+	residualSum := 0.0
+	totalSum := 0.0
+	for i := range x {
+		label := y[i]
+		prediction := slope * x[i] + intercept
+		residualDelta := label - prediction
+		residualSum += residualDelta * residualDelta
+		totalDelta := label - meanObserved
+		totalSum += totalDelta * totalDelta
+	}
+	r2Score := 1.0 - residualSum / totalSum
+	return r2Score
 }
 
 func GetCorrelation(x []float64, y []float64) float64 {
